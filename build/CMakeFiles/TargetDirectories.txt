@@ -1,0 +1,3 @@
+/home/ghirahim/Documents/Dersler/Compiler Design/Proje/MiniCCompiler/build/CMakeFiles/minic.dir
+/home/ghirahim/Documents/Dersler/Compiler Design/Proje/MiniCCompiler/build/CMakeFiles/edit_cache.dir
+/home/ghirahim/Documents/Dersler/Compiler Design/Proje/MiniCCompiler/build/CMakeFiles/rebuild_cache.dir
