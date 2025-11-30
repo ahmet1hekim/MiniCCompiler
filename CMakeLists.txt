@@ -2,26 +2,46 @@ cmake_minimum_required(VERSION 3.16)
 project(MiniC)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/out/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 
 find_package(FLEX REQUIRED)
+find_package(BISON REQUIRED)
 
-# Input lexer file
-set(LEXER_SRC ${CMAKE_SOURCE_DIR}/src/minicpl.lex)
+# Input files
+set(LEXER_SRC "${CMAKE_SOURCE_DIR}/src/minicpl.lex")
+set(PARSER_SRC "${CMAKE_SOURCE_DIR}/src/parser.y")
 
-# Generated lexer output file paths (in out/)
-set(LEXER_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/out)
-set(LEXER_CPP ${LEXER_OUTPUT_DIR}/lex.yy.cc)
-set(LEXER_HPP ${LEXER_OUTPUT_DIR}/lexer.hpp)  # if you generate header, else ignore
+# Output directories
+set(OUTPUT_DIR "${CMAKE_SOURCE_DIR}/out")
+file(MAKE_DIRECTORY "${OUTPUT_DIR}")
 
-# Use FLEX_TARGET to generate lexer files in out/
-FLEX_TARGET(MiniCLexer ${LEXER_SRC} ${LEXER_CPP} COMPILE_FLAGS --outfile=${LEXER_CPP})
+set(PARSER_CPP "${OUTPUT_DIR}/parser.cpp")
+set(PARSER_HPP "${OUTPUT_DIR}/parser.hpp")
+set(LEXER_CPP "${OUTPUT_DIR}/lex.yy.cc")
+
+# Generate Parser
+add_custom_command(
+    OUTPUT "${PARSER_CPP}" "${PARSER_HPP}"
+    COMMAND ${BISON_EXECUTABLE} --defines=${PARSER_HPP} -o ${PARSER_CPP} ${PARSER_SRC}
+    DEPENDS "${PARSER_SRC}"
+    COMMENT "Generating parser.cpp and parser.hpp"
+    VERBATIM
+)
+
+# Generate Lexer
+add_custom_command(
+    OUTPUT "${LEXER_CPP}"
+    COMMAND ${FLEX_EXECUTABLE} -o ${LEXER_CPP} ${LEXER_SRC}
+    DEPENDS "${LEXER_SRC}" "${PARSER_HPP}"
+    COMMENT "Generating lex.yy.cc"
+    VERBATIM
+)
 
 # Add executable
-add_executable(minic ${LEXER_CPP})
+add_executable(minic 
+    "${PARSER_CPP}"
+    "${LEXER_CPP}"
+)
 
-# Include directory for lexer.hpp if needed
-target_include_directories(minic PRIVATE ${LEXER_OUTPUT_DIR})
-
-# Link libraries if needed (usually none for flex++ basic lexer)
-# target_link_libraries(minic ...)
+# Include directories
+target_include_directories(minic PRIVATE "${OUTPUT_DIR}" "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/include")
