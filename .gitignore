@@ -9,7 +9,38 @@ devenv.local.yaml
 # pre-commit
 .pre-commit-config.yaml
 
+# Build artifacts and directories
+build/
+out/
+outputs/
+bin/
+obj/
 .bin
 .cmake
+
+# Generated files
+ast.dot
+ast.png
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+src/lex.yy.c
+src/lex.yy.cc
+src/parser.tab.c
+src/parser.tab.h
+src/*.output
+src/*.cpp
+src/*.hpp
+
+# Editor/IDE
+.vscode/
+.idea/
 .dot
 .png
+*.swp
+*~
+.DS_Store
