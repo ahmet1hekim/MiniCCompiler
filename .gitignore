@@ -1,46 +1,18 @@
-# Devenv
-.devenv*
-devenv.local.nix
-devenv.local.yaml
-
-# direnv
-.direnv
-
-# pre-commit
-.pre-commit-config.yaml
-
-# Build artifacts and directories
+# Build Artifacts
 build/
-out/
+minic
 outputs/
-bin/
-obj/
-.bin
-.cmake
-
-# Generated files
 ast.dot
 ast.png
-*.o
-*.obj
-*.a
-*.so
-*.dll
-*.dylib
-*.exe
+
+# Generated Source (just in case they leak)
 src/lex.yy.c
-src/lex.yy.cc
 src/parser.tab.c
 src/parser.tab.h
-src/*.output
-src/*.cpp
-src/*.hpp
 
 # Editor/IDE
 .vscode/
 .idea/
-.dot
-.png
 *.swp
 *~
 .DS_Store

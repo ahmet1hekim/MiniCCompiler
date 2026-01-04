@@ -1,26 +1,22 @@
-KW_INT
-ID(i)
-SEMICOLON
-ID(i)
-ASSIGN
-NUM(0)
-SEMICOLON
-KW_WHILE
-LPAREN
-ID(i)
-LT
-NUM(5)
-RPAREN
-LBRACE
-ID(print)
-LPAREN
-ID(i)
-RPAREN
-SEMICOLON
-ID(i)
-ASSIGN
-ID(i)
-PLUS
-NUM(1)
-SEMICOLON
-RBRACE
+Starting parse...
+Parse successful
+Printing AST...
+Program
+  Function: int main
+    Block
+      VarDecl: int i
+      Assign: i
+        Number: 0
+      While
+        BinaryExpr: <
+          Variable: i
+          Number: 5
+        Block
+          Print
+            Variable: i
+          Assign: i
+            BinaryExpr: +
+              Variable: i
+              Number: 1
+      Return
+        Number: 0

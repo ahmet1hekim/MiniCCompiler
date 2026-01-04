@@ -1,49 +1,26 @@
-KW_INT
-ID(add)
-LPAREN
-KW_INT
-ID(a)
-COMMA
-KW_INT
-ID(b)
-RPAREN
-LBRACE
-KW_INT
-ID(r)
-SEMICOLON
-ID(r)
-ASSIGN
-ID(a)
-PLUS
-ID(b)
-SEMICOLON
-KW_RETURN
-ID(r)
-SEMICOLON
-RBRACE
-KW_INT
-ID(main)
-LPAREN
-RPAREN
-LBRACE
-KW_INT
-ID(x)
-SEMICOLON
-ID(x)
-ASSIGN
-ID(add)
-LPAREN
-NUM(3)
-COMMA
-NUM(4)
-RPAREN
-SEMICOLON
-ID(print)
-LPAREN
-ID(x)
-RPAREN
-SEMICOLON
-KW_RETURN
-NUM(0)
-SEMICOLON
-RBRACE
+Starting parse...
+Parse successful
+Printing AST...
+Program
+  Function: int add
+    Param: int a
+    Param: int b
+    Block
+      VarDecl: int r
+      Assign: r
+        BinaryExpr: +
+          Variable: a
+          Variable: b
+      Return
+        Variable: r
+  Function: int main
+    Block
+      VarDecl: int x
+      Assign: x
+        Call: add
+          Number: 3
+          Number: 4
+      Print
+        Variable: x
+      Return
+        Number: 0

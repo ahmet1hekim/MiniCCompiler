@@ -1,30 +1,23 @@
-KW_INT
-ID(x)
-SEMICOLON
-KW_INT
-ID(y)
-SEMICOLON
-KW_INT
-ID(z)
-SEMICOLON
-ID(x)
-ASSIGN
-NUM(10)
-SEMICOLON
-ID(y)
-ASSIGN
-NUM(20)
-SEMICOLON
-ID(z)
-ASSIGN
-ID(x)
-PLUS
-ID(y)
-MUL
-NUM(2)
-SEMICOLON
-ID(print)
-LPAREN
-ID(z)
-RPAREN
-SEMICOLON
+Starting parse...
+Parse successful
+Printing AST...
+Program
+  Function: int main
+    Block
+      VarDecl: int x
+      VarDecl: int y
+      VarDecl: int z
+      Assign: x
+        Number: 10
+      Assign: y
+        Number: 20
+      Assign: z
+        BinaryExpr: +
+          Variable: x
+          BinaryExpr: *
+            Variable: y
+            Number: 2
+      Print
+        Variable: z
+      Return
+        Number: 0

@@ -1,16 +1,14 @@
-KW_INT
-ID(a)
-SEMICOLON
-ID(float)
-ID(b)
-SEMICOLON
-ID(a)
-ASSIGN
-NUM(5)
-SEMICOLON
-ID(b)
-ASSIGN
-NUM(3)
-UNKNOWN(.)
-NUM(14)
-SEMICOLON
+Starting parse...
+Parse successful
+Printing AST...
+Program
+  Function: int main
+    Block
+      VarDecl: int a
+      VarDecl: float b
+      Assign: a
+        Number: 5
+      Assign: b
+        Float: 3.14
+      Return
+        Number: 0
