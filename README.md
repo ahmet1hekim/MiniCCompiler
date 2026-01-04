@@ -1,95 +1,86 @@
-# Mini C Compiler
+# Mini C Compiler - Project 3: Semantics & Code Generation
 
-A robust Mini C compiler implementing a Lexer and Parser using Flex, Bison, and C++. It generates an Abstract Syntax Tree (AST) for valid Mini C programs.
+A complete Mini C compiler extending Project 2 (Parser) with Semantic Analysis and Code Generation using LLVM.
 
-## 🚀 Quick Start
+## 🚀 Features (Project 3 Implementation)
 
-The project includes an **automated script** that builds the compiler, runs all tests, and generates visualization.
+1.  **Semantic Analysis**:
+    *   **Scope Resolution**: Uses a Symbol Table (managed via `std::map<string, AllocaInst*>`) to track variables across block scopes (Shadowing supported).
+    *   **Type Checking**: Ensures compatibility between operands (e.g., `int` vs `float`).
+2.  **Code Generation**:
+    *   **LLVM IR**: implementation using LLVM C++ API (`IRBuilder`, `Module`, `Context`).
+    *   Generates native-ready LLVM Intermediate Representation.
+
+---
+
+## 🛠 Build & Run
+
+### Prerequisites
+*   `g++` (C++17)
+*   `bison`, `flex`
+*   `llvm` (install `llvm-dev` or similar, explicitly uses `llvm-config`)
+
+### 1. Quick Start (Master Script)
+The easiest way to build, verify, and verify the project:
 
 ```bash
 ./run.sh
 ```
 
-Alternatively, you can run commands manually:
+This script will:
+1.  Clean and rebuild the project (`make clean && make`).
+2.  Run the full test suite (`tests/verify.sh`).
+3.  Generate valid LLVM IR and DOT visualizations in `outputs/`.
+4.  Run a live demo of the factorial program.
 
-### 1. Build
+### 2. Manual Build & Run
+If you prefer manual commands:
+
+**Build:**
 ```bash
 make
 ```
 
-### 2. Run
+**Run (LLVM JIT):**
 ```bash
-./minic < tests/test1.mc
+./minic -llvm < tests/test9.mc | lli
+# Output: 120
 ```
 
-### 3. Verify
+**Generate LLVM IR File:**
 ```bash
-cd tests
-./verify.sh
+./minic -llvm < tests/test5.mc > program.ll
 ```
 
----
-
-## 🔧 Project Structure
-
-The project follows a clean standard C++ structure:
-
-*   `src/`: Source files (`lexer.l`, `parser.y`)
-*   `include/`: Header files (`ast.h`)
-*   `tests/`: Test programs (`.mc` files)
-*   `Makefile`: Build configuration
-*   `run.sh`: Automation script
-
----
-
-## 📖 Language Features
-
-The compiler supports the following C subset features:
-
-*   **Data Types**: `int`, `float`
-*   **Functions**: Declared with return type, name, and parameters.
-*   **Control Structures**: `if/else`, `while`, `return`.
-*   **I/O**: Built-in `print(expression);`.
-*   **Comments**: `//` single-line and `/* */` multi-line.
-
-### Example Code
-```c
-int main() {
-    int x;
-    x = 10;
-    while (x > 0) {
-        print(x);
-        x = x - 1;
-    }
-    return 0;
-}
-```
-
----
-
-## 🔧 Technical Details
-
-### Grammar (EBNF)
-```ebnf
-program         ::= { function_decl }
-function_decl   ::= ( "int" | "float" ) ID "(" [ param_list ] ")" block
-statement       ::= var_decl | assign_stmt | return_stmt | if_stmt | while_stmt | print_stmt | block
-expression      ::= expression op term | term
-```
-
-### AST Visualization
-You can generate a Graphviz DOT visualization of the AST:
+**Visualize AST (Project 2 feature):**
 ```bash
 ./minic -dot < tests/test5.mc > ast.dot
 dot -Tpng ast.dot -o ast.png
 ```
-*(Note: `./run.sh` does this automatically)*
 
 ---
 
-## 📋 Requirements
-*   Flex
-*   Bison
-*   G++ (C++17)
-*   Make
-*   Graphviz (optional, for visualization)
+## 🏗 Implementation Details
+
+### Architecture
+1.  **Lexer/Parser**: Flex/Bison generate the AST (`ast.h`).
+2.  **Code Generation (`codegen.cpp`)**:
+    *   `CodeGenerator` class traverses the AST via visitor-like pattern (`codegen` methods on nodes).
+    *   Maintains `namedValues` map for variable scope.
+    *   Uses `llvm::IRBuilder` to emit instructions (`alloca`, `store`, `load`, `add`, `icmp`, etc.).
+
+### Semantic Checks
+*   **Variable Resolution**: Checking `namedValues` during variable reference lookups.
+*   **Function Verification**: `functions` map tracks declared functions.
+
+---
+
+## 🧪 Test Suite
+
+See `tests/` directory.
+
+*   `test1.mc`: Basic types.
+*   `test2.mc`: Arithmetic rules.
+*   `test3.mc`: `if/else` control flow.
+*   `test4.mc`: `while` loops.
+*   `test5.mc`: Function calls and parameters.

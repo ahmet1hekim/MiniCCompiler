@@ -6,6 +6,14 @@
 #include <string>
 #include <vector>
 
+// Forward declaration for LLVM
+namespace llvm {
+class Value;
+}
+
+// Forward declaration for code generator
+class CodeGenerator;
+
 using namespace std;
 
 // Base class for all AST nodes
@@ -17,6 +25,9 @@ public:
   // Generate DOT output
   // returns the unique ID of this node
   virtual int generateDOT(ostream &out, int &count) const = 0;
+
+  // Generate LLVM IR
+  virtual llvm::Value *codegen(CodeGenerator *gen) = 0;
 
   void printIndent(int indent) const {
     for (int i = 0; i < indent; ++i)
@@ -32,6 +43,7 @@ class Number : public Expression {
 
 public:
   Number(int v) : value(v) {}
+  int getValue() const { return value; }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Number: " << value << endl;
@@ -41,6 +53,7 @@ public:
     out << "  node" << id << " [label=\"Number: " << value << "\"];" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class Float : public Expression {
@@ -48,6 +61,7 @@ class Float : public Expression {
 
 public:
   Float(float v) : value(v) {}
+  float getValue() const { return value; }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Float: " << value << endl;
@@ -57,6 +71,7 @@ public:
     out << "  node" << id << " [label=\"Float: " << value << "\"];" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class Variable : public Expression {
@@ -64,6 +79,7 @@ class Variable : public Expression {
 
 public:
   Variable(const string &n) : name(n) {}
+  const string &getName() const { return name; }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Variable: " << name << endl;
@@ -73,6 +89,7 @@ public:
     out << "  node" << id << " [label=\"Variable: " << name << "\"];" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class CallExpr : public Expression {
@@ -88,6 +105,8 @@ public:
       delete a;
     }
   }
+  const string &getName() const { return name; }
+  const vector<unique_ptr<Expression>> &getArgs() const { return args; }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Call: " << name << endl;
@@ -104,6 +123,7 @@ public:
     }
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class BinaryExpr : public Expression {
@@ -113,6 +133,9 @@ class BinaryExpr : public Expression {
 public:
   BinaryExpr(Expression *l, const string &o, Expression *r)
       : left(l), op(o), right(r) {}
+  const string &getOp() const { return op; }
+  Expression *getLeft() const { return left.get(); }
+  Expression *getRight() const { return right.get(); }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "BinaryExpr: " << op << endl;
@@ -128,6 +151,7 @@ public:
     out << "  node" << id << " -> node" << rightId << ";" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 // Statements
@@ -139,6 +163,8 @@ class VarDecl : public Statement {
 
 public:
   VarDecl(const string &t, const string &n) : type(t), name(n) {}
+  const string &getType() const { return type; }
+  const string &getName() const { return name; }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "VarDecl: " << type << " " << name << endl;
@@ -149,6 +175,7 @@ public:
         << "\"];" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class AssignStmt : public Statement {
@@ -157,6 +184,8 @@ class AssignStmt : public Statement {
 
 public:
   AssignStmt(const string &n, Expression *e) : name(n), expr(e) {}
+  const string &getName() const { return name; }
+  Expression *getExpr() const { return expr.get(); }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Assign: " << name << endl;
@@ -169,6 +198,7 @@ public:
     out << "  node" << id << " -> node" << exprId << ";" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class PrintStmt : public Statement {
@@ -176,6 +206,7 @@ class PrintStmt : public Statement {
 
 public:
   PrintStmt(Expression *e) : expr(e) {}
+  Expression *getExpr() const { return expr.get(); }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Print" << endl;
@@ -188,6 +219,7 @@ public:
     out << "  node" << id << " -> node" << exprId << ";" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class ReturnStmt : public Statement {
@@ -195,6 +227,7 @@ class ReturnStmt : public Statement {
 
 public:
   ReturnStmt(Expression *e) : expr(e) {}
+  Expression *getExpr() const { return expr.get(); }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Return" << endl;
@@ -210,6 +243,7 @@ public:
     }
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class IfStmt : public Statement {
@@ -220,6 +254,9 @@ class IfStmt : public Statement {
 public:
   IfStmt(Expression *c, Statement *t, Statement *e = nullptr)
       : condition(c), thenBranch(t), elseBranch(e) {}
+  Expression *getCondition() const { return condition.get(); }
+  Statement *getThenBranch() const { return thenBranch.get(); }
+  Statement *getElseBranch() const { return elseBranch.get(); }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "If" << endl;
@@ -250,6 +287,7 @@ public:
     }
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class WhileStmt : public Statement {
@@ -258,6 +296,8 @@ class WhileStmt : public Statement {
 
 public:
   WhileStmt(Expression *c, Statement *b) : condition(c), body(b) {}
+  Expression *getCondition() const { return condition.get(); }
+  Statement *getBody() const { return body.get(); }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "While" << endl;
@@ -278,6 +318,7 @@ public:
 
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class Block : public Statement {
@@ -285,6 +326,9 @@ class Block : public Statement {
 
 public:
   void addStatement(Statement *stmt) { statements.emplace_back(stmt); }
+  const vector<unique_ptr<Statement>> &getStatements() const {
+    return statements;
+  }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Block" << endl;
@@ -301,6 +345,7 @@ public:
     }
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 // Top Level
@@ -310,6 +355,8 @@ class Parameter : public ASTNode {
 
 public:
   Parameter(const string &t, const string &n) : type(t), name(n) {}
+  const string &getType() const { return type; }
+  const string &getName() const { return name; }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Param: " << type << " " << name << endl;
@@ -320,6 +367,7 @@ public:
         << "\"];" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class FunctionDecl : public ASTNode {
@@ -339,6 +387,10 @@ public:
       delete p;
     }
   }
+  const string &getReturnType() const { return returnType; }
+  const string &getName() const { return name; }
+  const vector<unique_ptr<Parameter>> &getParams() const { return params; }
+  Block *getBody() const { return body.get(); }
   void print(int indent = 0) const override {
     printIndent(indent);
     cout << "Function: " << returnType << " " << name << endl;
@@ -359,6 +411,7 @@ public:
     out << "  node" << id << " -> node" << bodyId << ";" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 class Program : public ASTNode {
@@ -366,6 +419,9 @@ class Program : public ASTNode {
 
 public:
   void addFunction(FunctionDecl *func) { functions.emplace_back(func); }
+  const vector<unique_ptr<FunctionDecl>> &getFunctions() const {
+    return functions;
+  }
   void print(int indent = 0) const override {
     cout << "Program" << endl;
     for (const auto &func : functions) {
@@ -383,6 +439,7 @@ public:
     out << "}" << endl;
     return id;
   }
+  llvm::Value *codegen(CodeGenerator *gen) override;
 };
 
 #endif
