@@ -25,6 +25,8 @@
     bison
     flex
     gcc
+    llvmPackages.llvm
+    llvmPackages.libllvm
   ];
 
   # https://devenv.sh/languages/

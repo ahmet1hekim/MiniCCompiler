@@ -1,6 +1,6 @@
 #!/bin/bash
-for file in *.mc; do
+for file in ../inputs/*.mc; do
     echo "Testing $file..."
-    ../out/bin/minic < "$file"
+    ../../bin/parser < "$file"
     echo "--------------------------------"
 done

@@ -8,6 +8,11 @@
 
 using namespace std;
 
+class CodeGenContext;
+namespace llvm {
+    class Value;
+}
+
 // Base class for all AST nodes
 class ASTNode {
 public:
@@ -17,6 +22,7 @@ public:
   // Generate DOT output
   // returns the unique ID of this node
   virtual int generateDOT(ostream &out, int &count) const = 0;
+  virtual llvm::Value* codegen(CodeGenContext& ctx) = 0;
 
   void printIndent(int indent) const {
     for (int i = 0; i < indent; ++i)
@@ -28,9 +34,9 @@ public:
 class Expression : public ASTNode {};
 
 class Number : public Expression {
+public:
   int value;
 
-public:
   Number(int v) : value(v) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -41,12 +47,13 @@ public:
     out << "  node" << id << " [label=\"Number: " << value << "\"];" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class Float : public Expression {
+public:
   float value;
 
-public:
   Float(float v) : value(v) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -57,12 +64,13 @@ public:
     out << "  node" << id << " [label=\"Float: " << value << "\"];" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class Variable : public Expression {
+public:
   string name;
 
-public:
   Variable(const string &n) : name(n) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -73,13 +81,14 @@ public:
     out << "  node" << id << " [label=\"Variable: " << name << "\"];" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class CallExpr : public Expression {
+public:
   string name;
   vector<unique_ptr<Expression>> args;
 
-public:
   CallExpr(const string &n, vector<Expression *> *a) : name(n) {
     if (a) {
       for (auto *expr : *a) {
@@ -104,13 +113,14 @@ public:
     }
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class BinaryExpr : public Expression {
+public:
   string op;
   unique_ptr<Expression> left, right;
 
-public:
   BinaryExpr(Expression *l, const string &o, Expression *r)
       : left(l), op(o), right(r) {}
   void print(int indent = 0) const override {
@@ -128,16 +138,17 @@ public:
     out << "  node" << id << " -> node" << rightId << ";" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 // Statements
 class Statement : public ASTNode {};
 
 class VarDecl : public Statement {
+public:
   string type;
   string name;
 
-public:
   VarDecl(const string &t, const string &n) : type(t), name(n) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -149,13 +160,14 @@ public:
         << "\"];" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class AssignStmt : public Statement {
+public:
   string name;
   unique_ptr<Expression> expr;
 
-public:
   AssignStmt(const string &n, Expression *e) : name(n), expr(e) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -169,12 +181,13 @@ public:
     out << "  node" << id << " -> node" << exprId << ";" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class PrintStmt : public Statement {
+public:
   unique_ptr<Expression> expr;
 
-public:
   PrintStmt(Expression *e) : expr(e) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -188,12 +201,13 @@ public:
     out << "  node" << id << " -> node" << exprId << ";" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class ReturnStmt : public Statement {
+public:
   unique_ptr<Expression> expr;
 
-public:
   ReturnStmt(Expression *e) : expr(e) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -210,14 +224,15 @@ public:
     }
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class IfStmt : public Statement {
+public:
   unique_ptr<Expression> condition;
   unique_ptr<Statement> thenBranch;
   unique_ptr<Statement> elseBranch;
 
-public:
   IfStmt(Expression *c, Statement *t, Statement *e = nullptr)
       : condition(c), thenBranch(t), elseBranch(e) {}
   void print(int indent = 0) const override {
@@ -250,13 +265,14 @@ public:
     }
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class WhileStmt : public Statement {
+public:
   unique_ptr<Expression> condition;
   unique_ptr<Statement> body;
 
-public:
   WhileStmt(Expression *c, Statement *b) : condition(c), body(b) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -278,12 +294,13 @@ public:
 
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class Block : public Statement {
+public:
   vector<unique_ptr<Statement>> statements;
 
-public:
   void addStatement(Statement *stmt) { statements.emplace_back(stmt); }
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -301,14 +318,15 @@ public:
     }
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 // Top Level
 class Parameter : public ASTNode {
+public:
   string type;
   string name;
 
-public:
   Parameter(const string &t, const string &n) : type(t), name(n) {}
   void print(int indent = 0) const override {
     printIndent(indent);
@@ -320,15 +338,16 @@ public:
         << "\"];" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class FunctionDecl : public ASTNode {
+public:
   string returnType;
   string name;
   vector<unique_ptr<Parameter>> params;
   unique_ptr<Block> body;
 
-public:
   FunctionDecl(const string &rt, const string &n, vector<Parameter *> *p,
                Block *b)
       : returnType(rt), name(n), body(b) {
@@ -359,12 +378,13 @@ public:
     out << "  node" << id << " -> node" << bodyId << ";" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 class Program : public ASTNode {
+public:
   vector<unique_ptr<FunctionDecl>> functions;
 
-public:
   void addFunction(FunctionDecl *func) { functions.emplace_back(func); }
   void print(int indent = 0) const override {
     cout << "Program" << endl;
@@ -383,6 +403,7 @@ public:
     out << "}" << endl;
     return id;
   }
+  llvm::Value* codegen(CodeGenContext& ctx) override;
 };
 
 #endif

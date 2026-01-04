@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include "ast.h"
+#include "codegen_context.h"
+#include "llvm/Support/raw_ostream.h"
 
 using namespace std;
 
@@ -163,30 +165,50 @@ void yyerror(const char *s) {
     cerr << "Error: " << s << endl;
 }
 
+extern FILE* yyin;
+
 int main(int argc, char** argv) {
     bool dotOutput = false;
-    if (argc > 1 && string(argv[1]) == "-dot") {
-        dotOutput = true;
+    char* filename = nullptr;
+
+    for (int i = 1; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "-dot") {
+            dotOutput = true;
+        } else {
+            filename = argv[i];
+        }
     }
 
-    if (!dotOutput) cout << "Starting parse..." << endl;
+    if (filename) {
+        FILE* file = fopen(filename, "r");
+        if (!file) {
+            cerr << "Error: Could not open file " << filename << endl;
+            return 1;
+        }
+        yyin = file;
+    }
+
+    if (!dotOutput) cerr << "Starting parse..." << endl;
     
     if (yyparse() == 0) {
-        if (!dotOutput) cout << "Parse successful" << endl;
         if (root) {
             if (dotOutput) {
                 int count = 0;
                 root->generateDOT(cout, count);
             } else {
-                cout << "Printing AST..." << endl;
-                root->print();
+                cerr << "Parse successful. Generating Code..." << endl;
+                CodeGenContext ctx;
+                root->codegen(ctx);
+                cerr << "Code Generation Complete." << endl;
+                ctx.module->print(llvm::outs(), nullptr);
             }
             delete root; 
         } else {
-            if (!dotOutput) cout << "Root is null" << endl;
+            if (!dotOutput) cerr << "Root is null" << endl;
         }
     } else {
-        if (!dotOutput) cout << "Parse failed" << endl;
+        if (!dotOutput) cerr << "Parse failed" << endl;
     }
     return 0;
 }

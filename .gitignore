@@ -33,8 +33,6 @@ src/lex.yy.cc
 src/parser.tab.c
 src/parser.tab.h
 src/*.output
-src/*.cpp
-src/*.hpp
 
 # Editor/IDE
 .vscode/
