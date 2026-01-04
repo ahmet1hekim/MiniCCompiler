@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Mini C Compiler Project 3 - Master Run Script
 # Automates Build, Verification, and Demonstration
