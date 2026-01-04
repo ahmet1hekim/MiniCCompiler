@@ -252,18 +252,18 @@ make
 
 **Run with LLVM JIT Execution:**
 ```bash
-./minic -llvm < tests/test9.mc | lli
+./minic < tests/test9.mc | lli
 # Output: 120
 ```
 
 **Generate LLVM IR File:**
 ```bash
-./minic -llvm < tests/test5.mc > program.ll
+./minic < tests/test5.mc > program.ll
 ```
 
 **Compile to Native Executable:**
 ```bash
-./minic -llvm < tests/test9.mc > program.ll
+./minic < tests/test9.mc > program.ll
 clang program.ll -o program
 ./program
 # Output: 120
@@ -271,7 +271,7 @@ clang program.ll -o program
 
 **Visualize AST (Project 2 feature):**
 ```bash
-./minic -dot < tests/test5.mc > ast.dot
+./minic --dot < tests/test5.mc > ast.dot
 dot -Tpng ast.dot -o ast.png
 ```
 
@@ -356,9 +356,10 @@ clang factorial_opt.ll -o factorial_optimized
   - `main()` function: Entry point that handles CLI flags
 
 **CLI Flags**:
-- `-dot`: Generate AST visualization in DOT format
-- `-llvm`: Generate LLVM IR code
-- (no flag): Print AST to stdout
+- `--dot`: Generate AST visualization in DOT format
+- `--llvm`: Generate LLVM IR code (Default)
+- `--parse`: Print Abstract Syntax Tree (AST) to stdout
+- `--lex`: Print Token stream to stdout
 
 #### 3. AST (`include/ast.h`, `src/ast_codegen.cpp`)
 - **Design**: Visitor pattern with polymorphic `codegen()` methods
