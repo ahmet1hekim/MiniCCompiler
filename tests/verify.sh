@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Use the directory where the script is located
+cd "$(dirname "$0")" || exit
+
 echo "============================================="
 echo "        MiniC Compiler Verification          "
 echo "============================================="
@@ -11,7 +14,7 @@ for file in invalid_*.mc; do
     echo "Processing $file..."
     
     # Capture stderr to check for specific errors
-    output=$(../minic -llvm < "$file" 2>&1)
+    output=$(../minic --llvm < "$file" 2>&1)
     status=$?
     
     if echo "$output" | grep -E -q "Error|Unknown|syntax error"; then
@@ -29,7 +32,7 @@ for file in test*.mc; do
     echo "Running $file..."
     
     # Run with lli
-    result=$(../minic -llvm < "$file" | lli)
+    result=$(../minic --llvm < "$file" | lli)
     
     echo "Output: $result"
     

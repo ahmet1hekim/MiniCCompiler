@@ -152,7 +152,7 @@ ifcont:
 
 You can optimize the generated LLVM IR:
 ```bash
-./minic -llvm < tests/test9.mc > program.ll
+./minic < tests/test9.mc > program.ll
 opt -O2 program.ll -o program_opt.ll
 ```
 
@@ -169,14 +169,14 @@ Common optimizations applied:
 #### Option 1: JIT Execution (Interpreter)
 Execute LLVM IR directly without creating a binary:
 ```bash
-./minic -llvm < tests/test9.mc | lli
+./minic < tests/test9.mc | lli
 ```
 **Output**: `120` (factorial of 5)
 
 #### Option 2: Compile to Native Executable via Clang
 ```bash
 # Step 1: Generate LLVM IR
-./minic -llvm < tests/test9.mc > program.ll
+./minic < tests/test9.mc > program.ll
 
 # Step 2: Compile to native executable
 clang program.ll -o program
@@ -189,10 +189,10 @@ clang program.ll -o program
 #### Option 3: Two-Stage Compilation (LLC + GCC)
 ```bash
 # Step 1: Generate LLVM IR
-./minic -llvm < tests/test9.mc > program.ll
+./minic < tests/test9.mc > program.ll
 
-# Step 2: Generate assembly code
-llc program.ll -o program.s
+# Step 2: Generate assembly code (Position Independent Code for PIE)
+llc -relocation-model=pic program.ll -o program.s
 
 # Step 3: Assemble and link
 gcc program.s -o program
@@ -204,7 +204,7 @@ gcc program.s -o program
 #### Option 4: Compile with Optimizations
 ```bash
 # Using Clang with optimization level
-./minic -llvm < tests/test9.mc > program.ll
+./minic < tests/test9.mc > program.ll
 clang -O3 program.ll -o program_optimized
 
 # Or using opt first, then Clang
@@ -285,7 +285,7 @@ make clean && make
 cat tests/test9.mc
 
 # 3. Generate LLVM IR
-./minic -llvm < tests/test9.mc > factorial.ll
+./minic < tests/test9.mc > factorial.ll
 
 # 4. View the generated IR
 cat factorial.ll
@@ -461,10 +461,10 @@ See `tests/` directory for comprehensive examples.
 ./tests/verify.sh
 
 # Run a single test
-./minic -llvm < tests/test9.mc | lli
+./minic < tests/test9.mc | lli
 
 # Generate IR for inspection
-./minic -llvm < tests/test3.mc > outputs/test3.ll
+./minic < tests/test3.mc > outputs/test3.ll
 ```
 
 ---
@@ -508,19 +508,19 @@ int main() {
 ### Debugging Generated IR
 ```bash
 # Generate IR with comments
-./minic -llvm < tests/test9.mc > debug.ll
+./minic < tests/test9.mc > debug.ll
 
 # Validate IR syntax
 llvm-as debug.ll -o /dev/null
 
-# Disassemble to human-readable form
-llvm-dis debug.ll
+# View the IR
+cat debug.ll
 ```
 
 ### Performance Analysis
 ```bash
 # Generate optimized code
-./minic -llvm < tests/test9.mc > program.ll
+./minic < tests/test9.mc > program.ll
 opt -O3 -time-passes program.ll -o optimized.ll
 
 # Compare assembly output
@@ -532,7 +532,7 @@ diff program.s optimized.s
 ### Cross-Compilation
 ```bash
 # Compile for different architectures
-./minic -llvm < tests/test9.mc > program.ll
+./minic < tests/test9.mc > program.ll
 
 # ARM
 llc -march=arm program.ll -o program_arm.s

@@ -36,12 +36,12 @@ mkdir -p outputs
 
 # Generate LLVM IR for test5 (Function Call)
 echo "Generating LLVM IR for tests/test5.mc..."
-./minic -llvm < tests/test5.mc > outputs/test5.ll
+./minic --llvm < tests/test5.mc > outputs/test5.ll
 echo "Saved to outputs/test5.ll"
 
 # Generate AST DOT for test5
 echo "Generating AST Visual for tests/test5.mc..."
-./minic -dot < tests/test5.mc > outputs/test5.dot
+./minic --dot < tests/test5.mc > outputs/test5.dot
 if command -v dot &> /dev/null; then
     dot -Tpng outputs/test5.dot -o outputs/test5.png
     echo "Saved to outputs/test5.png"
@@ -53,8 +53,8 @@ fi
 echo -e "\n========================================"
 echo " 4. Running 'lli' Demo (JIT Execution)"
 echo "========================================"
-echo "Running: ./minic -llvm < tests/test9.mc (Factorial 5)"
-result=$(./minic -llvm < tests/test9.mc | lli)
+echo "Running: ./minic --llvm < tests/test9.mc (Factorial 5)"
+result=$(./minic --llvm < tests/test9.mc | lli)
 echo "Result: $result"
 if [ "$result" -eq 120 ]; then
     echo "✅ Correct Result (120)"
