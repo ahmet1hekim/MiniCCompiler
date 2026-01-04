@@ -26,6 +26,8 @@ This project implements a Lexer and Parser for a Mini C language using Flex, Bis
    ```
 
 ### Running
+
+#### AST Output (Default)
 The executable `minic` reads from standard input and prints the AST to standard output.
 
 ```bash
@@ -36,6 +38,24 @@ Or run the verification script:
 ```bash
 cd tests
 ./verify.sh
+```
+
+#### LLVM IR Generation and Execution
+Generate and execute LLVM IR using pure LLVM tools (no gcc required):
+
+```bash
+# Option 1: Direct execution with lli (LLVM interpreter) - Recommended
+./out/bin/minic -llvm < tests/test5.mc | lli
+
+# Option 2: Save IR and execute
+./out/bin/minic -llvm < tests/test5.mc > program.ll
+lli program.ll
+
+# Option 3: Compile to native executable (requires clang or gcc)
+./out/bin/minic -llvm < tests/test5.mc > program.ll
+llc program.ll -o program.s
+clang -no-pie program.s -o program  # or: gcc -no-pie program.s -o program
+./program
 ```
 
 ### Generating AST Visualization (DOT)

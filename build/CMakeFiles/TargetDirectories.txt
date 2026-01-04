@@ -1,0 +1,8 @@
+/home/alx/projects/MiniCCompiler/build/CMakeFiles/intrinsics_gen.dir
+/home/alx/projects/MiniCCompiler/build/CMakeFiles/vt_gen.dir
+/home/alx/projects/MiniCCompiler/build/CMakeFiles/omp_gen.dir
+/home/alx/projects/MiniCCompiler/build/CMakeFiles/acc_gen.dir
+/home/alx/projects/MiniCCompiler/build/CMakeFiles/target_parser_gen.dir
+/home/alx/projects/MiniCCompiler/build/CMakeFiles/minic.dir
+/home/alx/projects/MiniCCompiler/build/CMakeFiles/edit_cache.dir
+/home/alx/projects/MiniCCompiler/build/CMakeFiles/rebuild_cache.dir

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "ast.h"
+#include "codegen.h"
 
 using namespace std;
 
@@ -165,28 +166,40 @@ void yyerror(const char *s) {
 
 int main(int argc, char** argv) {
     bool dotOutput = false;
-    if (argc > 1 && string(argv[1]) == "-dot") {
-        dotOutput = true;
+    bool llvmOutput = false;
+    
+    if (argc > 1) {
+        string arg = argv[1];
+        if (arg == "-dot") {
+            dotOutput = true;
+        } else if (arg == "-llvm") {
+            llvmOutput = true;
+        }
     }
 
-    if (!dotOutput) cout << "Starting parse..." << endl;
+    if (!dotOutput && !llvmOutput) cout << "Starting parse..." << endl;
     
     if (yyparse() == 0) {
-        if (!dotOutput) cout << "Parse successful" << endl;
+        if (!dotOutput && !llvmOutput) cout << "Parse successful" << endl;
         if (root) {
             if (dotOutput) {
                 int count = 0;
                 root->generateDOT(cout, count);
+            } else if (llvmOutput) {
+                // Generate LLVM IR
+                CodeGenerator gen;
+                gen.generate(root);
+                gen.printIR();
             } else {
                 cout << "Printing AST..." << endl;
                 root->print();
             }
             delete root; 
         } else {
-            if (!dotOutput) cout << "Root is null" << endl;
+            if (!dotOutput && !llvmOutput) cout << "Root is null" << endl;
         }
     } else {
-        if (!dotOutput) cout << "Parse failed" << endl;
+        if (!dotOutput && !llvmOutput) cout << "Parse failed" << endl;
     }
     return 0;
 }

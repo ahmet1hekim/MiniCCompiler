@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+e5bb273ddd52342986b265fcc3b297ce /home/alx/projects/MiniCCompiler/out/lex.yy.cc
+feca5186edfc119385570ead298ea2d4 /home/alx/projects/MiniCCompiler/out/parser.cpp

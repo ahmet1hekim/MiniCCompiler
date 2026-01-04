@@ -7,6 +7,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 
+# Find LLVM
+find_package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
+# Add LLVM definitions and include directories
+add_definitions(${LLVM_DEFINITIONS})
+include_directories(${LLVM_INCLUDE_DIRS})
+
+# Link against LLVM libraries
+link_directories(${LLVM_LIBRARY_DIRS})
+
 # Input files
 set(LEXER_SRC "${CMAKE_SOURCE_DIR}/src/minicpl.lex")
 set(PARSER_SRC "${CMAKE_SOURCE_DIR}/src/parser.y")
@@ -41,7 +53,12 @@ add_custom_command(
 add_executable(minic 
     "${PARSER_CPP}"
     "${LEXER_CPP}"
+    "${CMAKE_SOURCE_DIR}/src/codegen.cpp"
+    "${CMAKE_SOURCE_DIR}/src/ast_codegen.cpp"
 )
 
 # Include directories
 target_include_directories(minic PRIVATE "${OUTPUT_DIR}" "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/include")
+
+# Link LLVM libraries
+target_link_libraries(minic LLVM)
