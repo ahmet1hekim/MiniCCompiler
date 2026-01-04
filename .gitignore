@@ -16,3 +16,4 @@ src/parser.tab.h
 *.swp
 *~
 .DS_Store
+*.ll
