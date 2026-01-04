@@ -166,41 +166,93 @@ void yyerror(const char *s) {
     cerr << "Error: " << s << endl;
 }
 
+extern char* yytext;
+
+const char* getTokenName(int token) {
+    switch(token) {
+        case ID: return "ID";
+        case NUM: return "NUM";
+        case FLOAT_LIT: return "FLOAT_LIT";
+        case KW_INT: return "KW_INT";
+        case KW_FLOAT: return "KW_FLOAT";
+        case KW_RETURN: return "KW_RETURN";
+        case KW_IF: return "KW_IF";
+        case KW_ELSE: return "KW_ELSE";
+        case KW_WHILE: return "KW_WHILE";
+        case KW_PRINT: return "KW_PRINT";
+        case EQ: return "EQ";
+        case NEQ: return "NEQ";
+        case LE: return "LE";
+        case GE: return "GE";
+        case ASSIGN: return "ASSIGN";
+        case LT: return "LT";
+        case GT: return "GT";
+        case PLUS: return "PLUS";
+        case MINUS: return "MINUS";
+        case MUL: return "MUL";
+        case DIV: return "DIV";
+        case SEMICOLON: return "SEMICOLON";
+        case COMMA: return "COMMA";
+        case LPAREN: return "LPAREN";
+        case RPAREN: return "RPAREN";
+        case LBRACE: return "LBRACE";
+        case RBRACE: return "RBRACE";
+        default: return "UNKNOWN";
+    }
+}
+
 int main(int argc, char** argv) {
     bool dotOutput = false;
-    bool llvmOutput = false;
+    bool llvmOutput = true; // Default
+    bool parseOutput = false;
+    bool lexOutput = false;
 
     if (argc > 1) {
         string arg = argv[1];
-        if (arg == "-dot") {
+        if (arg == "--dot") {
             dotOutput = true;
-        } else if (arg == "-llvm") {
+            llvmOutput = false;
+        } else if (arg == "--parse") {
+            parseOutput = true;
+            llvmOutput = false;
+        } else if (arg == "--lex") {
+            lexOutput = true;
+            llvmOutput = false;
+        } else if (arg == "--llvm") {
             llvmOutput = true;
+        } else {
+            cerr << "Error: Unknown option: " << arg << endl;
+            return 1;
         }
     }
 
-    if (!dotOutput && !llvmOutput) cout << "Starting parse..." << endl;
-    
+    if (lexOutput) {
+        int token;
+        while ((token = yylex()) != 0) {
+            cout << "Token: " << getTokenName(token) << ", Lexeme: " << yytext << endl;
+        }
+        return 0;
+    }
+
+    // Parse
     if (yyparse() == 0) {
-        if (!dotOutput && !llvmOutput) cout << "Parse successful" << endl;
         if (root) {
             if (dotOutput) {
                 int count = 0;
                 root->generateDOT(cout, count);
-            } else if (llvmOutput) {
+            } else if (parseOutput) {
+                root->print();
+            } else {
+                // LLVM Output (Default)
                 CodeGenerator generator;
                 generator.generate(root);
                 generator.printIR();
-            } else {
-                cout << "Printing AST..." << endl;
-                root->print();
             }
             delete root; 
-        } else {
-            if (!dotOutput) cout << "Root is null" << endl;
         }
     } else {
-        if (!dotOutput) cout << "Parse failed" << endl;
+        cerr << "Parse failed" << endl;
+        return 1;
     }
     return 0;
 }
