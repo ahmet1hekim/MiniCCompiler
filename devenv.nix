@@ -28,17 +28,6 @@
   ];
 
   # https://devenv.sh/languages/
-  languages.python = {
-    enable = true;
-    version = "3.11";
-    venv.enable = true;
-    venv.requirements = ''
-      mediapipe==0.10.21
-      numpy
-      pandas
-      opencv-python
-    '';
-  };
 
   # https://devenv.sh/processes/
   # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
